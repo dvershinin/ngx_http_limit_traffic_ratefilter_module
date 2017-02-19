@@ -11,16 +11,16 @@ ngx_http_limit_traffic_rate_filter_handler(ngx_http_request_t *r);
 static ngx_int_t
 ngx_http_limit_traffic_rate_filter_init(ngx_conf_t *cf);
 static ngx_int_t
-    ngx_http_limit_traffic_rate_body_filter(ngx_http_request_t *r, ngx_chain_t *in);
-static void* ngx_http_limit_traffic_rate_filter_create_loc_conf(ngx_conf_t *cf);
+ngx_http_limit_traffic_rate_body_filter(ngx_http_request_t *r, ngx_chain_t *in);
+static void *ngx_http_limit_traffic_rate_filter_create_loc_conf(ngx_conf_t *cf);
 
-static char* ngx_http_limit_traffic_rate_filter_merge_loc_conf(ngx_conf_t *cf,
-    void *parent, void *child);
+static char *ngx_http_limit_traffic_rate_filter_merge_loc_conf(ngx_conf_t *cf,
+        void *parent, void *child);
 static ngx_int_t
 ngx_http_limit_traffic_rate_filter_init_zone(ngx_shm_zone_t *shm_zone, void *data);
 static void
 ngx_http_limit_traffic_rate_filter_rbtree_insert_value(ngx_rbtree_node_t *temp,
-    ngx_rbtree_node_t *node, ngx_rbtree_node_t *sentinel);
+        ngx_rbtree_node_t *node, ngx_rbtree_node_t *sentinel);
 static void
 ngx_http_limit_traffic_rate_filter_cleanup(void *data);
 static char *
@@ -35,7 +35,7 @@ typedef struct {
     ngx_time_t              last_last_time;
     off_t                          last_sent;
     off_t                          last_last_sent;
-}ngx_http_limit_traffic_rate_filter_request_queue_t;
+} ngx_http_limit_traffic_rate_filter_request_queue_t;
 
 typedef struct {
     ngx_shm_zone_t     *shm_zone;
@@ -65,21 +65,25 @@ typedef struct {
 
 static ngx_command_t  ngx_http_limit_traffic_rate_filter_commands[] = {
 
-    { ngx_string("limit_traffic_rate_zone"),
-      NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE3,
-      ngx_http_limit_traffic_rate_zone,
-      0,
-      0,
-      NULL },
+    {
+        ngx_string("limit_traffic_rate_zone"),
+        NGX_HTTP_MAIN_CONF|NGX_CONF_TAKE3,
+        ngx_http_limit_traffic_rate_zone,
+        0,
+        0,
+        NULL
+    },
 
-    { ngx_string("limit_traffic_rate"),
+    {
+        ngx_string("limit_traffic_rate"),
         NGX_HTTP_MAIN_CONF|NGX_HTTP_SRV_CONF|NGX_HTTP_LOC_CONF|NGX_CONF_TAKE2,
         ngx_http_limit_traffic_rate,
         NGX_HTTP_LOC_CONF_OFFSET,
         0,
-        NULL },
+        NULL
+    },
 
-      ngx_null_command
+    ngx_null_command
 };
 
 
@@ -118,8 +122,7 @@ static ngx_http_output_body_filter_pt    ngx_http_next_body_filter;
 
 
 static ngx_int_t
-ngx_http_limit_traffic_rate_filter_handler(ngx_http_request_t *r)
-{
+ngx_http_limit_traffic_rate_filter_handler(ngx_http_request_t *r) {
     size_t                          len, n;
     uint32_t                        hash;
     ngx_int_t                       rc;
@@ -132,7 +135,7 @@ ngx_http_limit_traffic_rate_filter_handler(ngx_http_request_t *r)
     ngx_http_limit_traffic_rate_filter_conf_t     *lircf;
     ngx_http_limit_traffic_rate_filter_cleanup_t  *lircln;
     ngx_http_core_loc_conf_t  *clcf;
-    
+
     clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
     lircf = ngx_http_get_module_loc_conf(r, ngx_http_limit_traffic_rate_filter_module);
 
@@ -236,7 +239,7 @@ ngx_http_limit_traffic_rate_filter_handler(ngx_http_request_t *r)
     lir->len = (u_short) len;
     lir->conn = 1;
     lir->start_sec = r->start_sec;
-    
+
     ngx_queue_init(&(lir->rq_top));
     ngx_http_limit_traffic_rate_filter_request_queue_t  *req;
     req = ngx_slab_alloc_locked(shpool, sizeof(ngx_http_limit_traffic_rate_filter_request_queue_t));
@@ -251,7 +254,7 @@ ngx_http_limit_traffic_rate_filter_handler(ngx_http_request_t *r)
     req->last_last_sent = 0;
     clcf->sendfile_max_chunk = lircf->limit_traffic_rate / lir->conn;
     ngx_queue_insert_tail(&(lir->rq_top), &req->rq);
-    
+
     ngx_memcpy(lir->data, vv->data, len);
 
     ngx_rbtree_insert(ctx->rbtree, node);
@@ -274,8 +277,7 @@ done:
 
 
 static ngx_int_t
-    ngx_http_limit_traffic_rate_body_filter(ngx_http_request_t *r, ngx_chain_t *in)
-{
+ngx_http_limit_traffic_rate_body_filter(ngx_http_request_t *r, ngx_chain_t *in) {
     size_t                                     len;
     uint32_t                                 hash;
     ngx_int_t                               rc;
@@ -288,9 +290,9 @@ static ngx_int_t
     ngx_http_limit_traffic_rate_filter_node_t     *lir;
     ngx_http_limit_traffic_rate_filter_conf_t     *lircf;
     ngx_http_core_loc_conf_t  *clcf;
-    
+
     ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, "limit traffic rate filter");
-    
+
     clcf = ngx_http_get_module_loc_conf(r, ngx_http_core_module);
     lircf = ngx_http_get_module_loc_conf(r, ngx_http_limit_traffic_rate_filter_module);
 
@@ -350,12 +352,12 @@ static ngx_int_t
 
             if (rc == 0) {
                 ngx_queue_t *p = lir->rq_top.next;
-                ngx_http_limit_traffic_rate_filter_request_queue_t * tr;
+                ngx_http_limit_traffic_rate_filter_request_queue_t *tr;
                 clcf->sendfile_max_chunk = lircf->limit_traffic_rate / lir->conn;
 
-                for(; p; ){
-                    tr = ngx_queue_data(p, ngx_http_limit_traffic_rate_filter_request_queue_t, rq); 
-                    if(tr->r == r) {
+                for (; p;) {
+                    tr = ngx_queue_data(p, ngx_http_limit_traffic_rate_filter_request_queue_t, rq);
+                    if (tr->r == r) {
                         tr->last_last_sent = tr->last_sent;
                         tr->last_last_time = tr->last_time;
                         tr->last_sent = r->connection->sent;
@@ -363,27 +365,27 @@ static ngx_int_t
 
                         delta_msec = tr->last_time.sec * 1000 + tr->last_time.msec -  tr->last_last_time.sec * 1000 - tr->last_last_time.msec;
 
-                        if ( tr->last_sent - tr->last_last_sent > lircf->limit_traffic_rate/lir->conn ) {
+                        if (tr->last_sent - tr->last_last_sent > lircf->limit_traffic_rate/lir->conn) {
                             /* first second */
-                            delay = (ngx_msec_t) ((tr->last_sent - tr->last_last_sent) *1000 / (lircf->limit_traffic_rate/lir->conn));
-                           
-                        }else if (tr->last_time.sec == tr->last_last_time.sec && tr->last_time.msec == tr->last_last_time.msec){
+                            delay = (ngx_msec_t)((tr->last_sent - tr->last_last_sent) *1000 / (lircf->limit_traffic_rate/lir->conn));
+
+                        } else if (tr->last_time.sec == tr->last_last_time.sec && tr->last_time.msec == tr->last_last_time.msec) {
                             /* first in, let download go */
                             break;
-                        } else if ( (tr->last_sent - tr->last_last_sent)*1000 / delta_msec > lircf->limit_traffic_rate/lir->conn ) {
-                                   
-                            delay = (ngx_msec_t) ((tr->last_sent - tr->last_last_sent) *1000 / (lircf->limit_traffic_rate/lir->conn));
-                            
+                        } else if ((tr->last_sent - tr->last_last_sent)*1000 / delta_msec > lircf->limit_traffic_rate/lir->conn) {
+
+                            delay = (ngx_msec_t)((tr->last_sent - tr->last_last_sent) *1000 / (lircf->limit_traffic_rate/lir->conn));
+
                         }
-                        
+
                         break;
                     }
-                    if(ngx_queue_last(&lir->rq_top) == p){
+                    if (ngx_queue_last(&lir->rq_top) == p) {
                         break;
                     }
                     p = ngx_queue_next(p);
                 }
-    
+
 
 
                 goto done;
@@ -397,7 +399,7 @@ static ngx_int_t
     }
     ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
                    "rbtree search fail: %08XD %d", node->key, r->limit_rate);
-    
+
 done:
 
     ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
@@ -415,8 +417,7 @@ done:
 }
 
 static ngx_int_t
-ngx_http_limit_traffic_rate_filter_log_handler(ngx_http_request_t *r)
-{
+ngx_http_limit_traffic_rate_filter_log_handler(ngx_http_request_t *r) {
     size_t                          len;
     uint32_t                        hash;
     ngx_int_t                       rc;
@@ -427,9 +428,9 @@ ngx_http_limit_traffic_rate_filter_log_handler(ngx_http_request_t *r)
     ngx_http_limit_traffic_rate_filter_node_t     *lir;
     ngx_http_limit_traffic_rate_filter_conf_t     *lircf;
 
-    ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0, 
-                            "limit traffic rate log phase handler");
-    
+    ngx_log_debug0(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
+                   "limit traffic rate log phase handler");
+
     lircf = ngx_http_get_module_loc_conf(r, ngx_http_limit_traffic_rate_filter_module);
 
     if (lircf->shm_zone == NULL) {
@@ -488,17 +489,17 @@ ngx_http_limit_traffic_rate_filter_log_handler(ngx_http_request_t *r)
 
             if (rc == 0) {
                 ngx_queue_t *p = lir->rq_top.next;
-                ngx_http_limit_traffic_rate_filter_request_queue_t * tr;
-                for(; p; ){
-                    tr = ngx_queue_data(p, ngx_http_limit_traffic_rate_filter_request_queue_t, rq); 
-                    if(tr->r == r){
+                ngx_http_limit_traffic_rate_filter_request_queue_t *tr;
+                for (; p;) {
+                    tr = ngx_queue_data(p, ngx_http_limit_traffic_rate_filter_request_queue_t, rq);
+                    if (tr->r == r) {
                         tr->r = NULL;
                         ngx_queue_remove(p);
                         ngx_slab_free_locked(shpool, tr);
                         goto done;
                     }
 
-                    if(ngx_queue_last(&lir->rq_top) == p){
+                    if (ngx_queue_last(&lir->rq_top) == p) {
                         break;
                     }
                     p = ngx_queue_next(p);
@@ -515,7 +516,7 @@ ngx_http_limit_traffic_rate_filter_log_handler(ngx_http_request_t *r)
     }
     ngx_log_debug2(NGX_LOG_DEBUG_HTTP, r->connection->log, 0,
                    "rbtree search fail: %08XD %d", node->key, r->limit_rate);
-    
+
 done:
 
     ngx_shmtx_unlock(&shpool->mutex);
@@ -524,8 +525,7 @@ done:
 }
 
 static ngx_int_t
-ngx_http_limit_traffic_rate_filter_init(ngx_conf_t *cf)
-{
+ngx_http_limit_traffic_rate_filter_init(ngx_conf_t *cf) {
     ngx_http_handler_pt        *h;
     ngx_http_core_main_conf_t  *cmcf;
 
@@ -552,8 +552,7 @@ ngx_http_limit_traffic_rate_filter_init(ngx_conf_t *cf)
 }
 
 static void *
-ngx_http_limit_traffic_rate_filter_create_loc_conf(ngx_conf_t *cf)
-{
+ngx_http_limit_traffic_rate_filter_create_loc_conf(ngx_conf_t *cf) {
     ngx_http_limit_traffic_rate_filter_conf_t  *conf;
 
     conf = ngx_pcalloc(cf->pool, sizeof(ngx_http_limit_traffic_rate_filter_conf_t));
@@ -565,8 +564,7 @@ ngx_http_limit_traffic_rate_filter_create_loc_conf(ngx_conf_t *cf)
 }
 
 static char *
-ngx_http_limit_traffic_rate_filter_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child)
-{
+ngx_http_limit_traffic_rate_filter_merge_loc_conf(ngx_conf_t *cf, void *parent, void *child) {
     ngx_http_limit_traffic_rate_filter_conf_t *prev = parent;
     ngx_http_limit_traffic_rate_filter_conf_t *conf = child;
 
@@ -577,12 +575,11 @@ ngx_http_limit_traffic_rate_filter_merge_loc_conf(ngx_conf_t *cf, void *parent, 
 
 static void
 ngx_http_limit_traffic_rate_filter_rbtree_insert_value(ngx_rbtree_node_t *temp,
-    ngx_rbtree_node_t *node, ngx_rbtree_node_t *sentinel)
-{
+        ngx_rbtree_node_t *node, ngx_rbtree_node_t *sentinel) {
     ngx_rbtree_node_t           **p;
     ngx_http_limit_traffic_rate_filter_node_t   *lirn, *lirnt;
 
-    for ( ;; ) {
+    for (;;) {
 
         if (node->key < temp->key) {
 
@@ -616,8 +613,7 @@ ngx_http_limit_traffic_rate_filter_rbtree_insert_value(ngx_rbtree_node_t *temp,
 }
 
 static ngx_int_t
-ngx_http_limit_traffic_rate_filter_init_zone(ngx_shm_zone_t *shm_zone, void *data)
-{
+ngx_http_limit_traffic_rate_filter_init_zone(ngx_shm_zone_t *shm_zone, void *data) {
     ngx_http_limit_traffic_rate_filter_ctx_t  *octx = data;
 
     size_t                      len;
@@ -678,8 +674,7 @@ ngx_http_limit_traffic_rate_filter_init_zone(ngx_shm_zone_t *shm_zone, void *dat
 }
 
 static void
-ngx_http_limit_traffic_rate_filter_cleanup(void *data)
-{
+ngx_http_limit_traffic_rate_filter_cleanup(void *data) {
     ngx_http_limit_traffic_rate_filter_cleanup_t  *lircln = data;
 
     ngx_slab_pool_t             *shpool;
@@ -699,7 +694,7 @@ ngx_http_limit_traffic_rate_filter_cleanup(void *data)
 
     lir->conn--;
 
-    if (lir->conn == 0) {        
+    if (lir->conn == 0) {
         ngx_rbtree_delete(ctx->rbtree, node);
         ngx_slab_free_locked(shpool, node);
     }
@@ -708,8 +703,7 @@ ngx_http_limit_traffic_rate_filter_cleanup(void *data)
 }
 
 static char *
-ngx_http_limit_traffic_rate_zone(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
-{
+ngx_http_limit_traffic_rate_zone(ngx_conf_t *cf, ngx_command_t *cmd, void *conf) {
     ssize_t                     n;
     ngx_str_t                  *value;
     ngx_shm_zone_t             *shm_zone;
@@ -746,7 +740,7 @@ ngx_http_limit_traffic_rate_zone(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         return NGX_CONF_ERROR;
     }
 
-    if (n < (ngx_int_t) (8 * ngx_pagesize)) {
+    if (n < (ngx_int_t)(8 * ngx_pagesize)) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                            "limit_traffic_rate_zone \"%V\" is too small", &value[1]);
         return NGX_CONF_ERROR;
@@ -763,8 +757,8 @@ ngx_http_limit_traffic_rate_zone(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
         ctx = shm_zone->data;
 
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
-                        "limit_traffic_rate_zone \"%V\" is already bound to variable \"%V\"",
-                        &value[1], &ctx->var);
+                           "limit_traffic_rate_zone \"%V\" is already bound to variable \"%V\"",
+                           &value[1], &ctx->var);
         return NGX_CONF_ERROR;
     }
 
@@ -776,8 +770,7 @@ ngx_http_limit_traffic_rate_zone(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 
 
 static char *
-ngx_http_limit_traffic_rate(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
-{
+ngx_http_limit_traffic_rate(ngx_conf_t *cf, ngx_command_t *cmd, void *conf) {
     ngx_http_limit_traffic_rate_filter_conf_t  *lircf = conf;
 
     ngx_int_t   n;
@@ -790,13 +783,13 @@ ngx_http_limit_traffic_rate(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
     value = cf->args->elts;
 
     lircf->shm_zone = ngx_shared_memory_add(cf, &value[1], 0,
-                                           &ngx_http_limit_traffic_rate_filter_module);
+                                            &ngx_http_limit_traffic_rate_filter_module);
     if (lircf->shm_zone == NULL) {
         return NGX_CONF_ERROR;
     }
 
     n = ngx_parse_size(&value[2]);
-    
+
     if (n == NGX_ERROR) {
         ngx_conf_log_error(NGX_LOG_EMERG, cf, 0,
                            "invalid size of limit_traffic_rate \"%V\"", &value[3]);
