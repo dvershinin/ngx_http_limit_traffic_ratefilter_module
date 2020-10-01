@@ -1,44 +1,50 @@
-Notes on the limit_traffic_rate module
-=====
+limit_traffic_rate module
+=========================
+
+Notes
+-----
+
+Nginx directive `limit_rate` could limit connection's speed, and `limit_conn` could limit connection number by given variable. If the client is a browser, it only open one connection to the server. The speed will be limited to `limit_rate`, unless the client is a multi-thread download tool.
+
+`ngx_http_limit_traffic_ratefilter_module` provides a method to limit the total download rate by client IP or download URL, even there are several connections. The limit condition could be defined by the following directive.
 
 To install, compile nginx with this ./configure option:
 
     --add-module=path/to/this/directory
 
-Nginx directive limit_rate could limit connection's speed, and limit_conn 
-could limit connection number by given variable. If the client is a browser,
- it only open one connection to the server. The speed will be limited to 
-limit_rate, unless the client is a multi-thread download tool.
+The limit_traffic_rate module need to use a share memory pool.
 
-Limit_traffic_rate module provides a method to limit the total download rate
- by client IP or download URL, even there are several connections. The 
-limit condition could be defined by the following directive.
+Directive syntax is same to limit_zone
+--------------------------------------
 
-The limit_traffic_rate module need to use a share memory pool. Directive 
-syntax is same to limit_zone. 
+```nginx
+http {
+    #limit_traffic_rate_zone   rate $request_uri 32m;
+    limit_traffic_rate_zone   rate $remote_addr 32m;
 
-    http {
-        #limit_traffic_rate_zone   rate $request_uri 32m;
-        limit_traffic_rate_zone   rate $remote_addr 32m;
-        
-        server {
-            location /download/ {
-                limit_traffic_rate  rate 20k;
-            }
+    server {
+        location /download/ {
+            limit_traffic_rate  rate 20k;
         }
     }
+}
+```
 
 Changelogs
-  v0.2 
-    *   modify algorithm, rate = (limit - last_rate)/conn + last_rate
-  v0.1
-    *   first release
+==========
+
+    v0.2 
+    - modify algorithm, rate = (limit - last_rate)/conn + last_rate
+    
+    v0.1
+    - first release
 
 License
-=====
+=======
 
 Same as nginx:
 
+```
 /* 
  * Copyright (C) 2010 Simon(bigplum@gmail.com)
  *
@@ -63,5 +69,4 @@ Same as nginx:
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
  */
-
-
+```
