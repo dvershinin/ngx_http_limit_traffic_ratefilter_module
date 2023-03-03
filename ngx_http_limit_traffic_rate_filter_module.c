@@ -202,7 +202,7 @@ ngx_http_limit_traffic_rate_filter_handler(ngx_http_request_t *r) {
                 lir->conn++;
                 ngx_http_limit_traffic_rate_filter_request_queue_t  *req;
                 req = ngx_slab_alloc_locked(shpool, sizeof(ngx_http_limit_traffic_rate_filter_request_queue_t));
-                if (node == NULL) {
+                if (req == NULL) {
                     ngx_shmtx_unlock(&shpool->mutex);
                     return NGX_HTTP_SERVICE_UNAVAILABLE;
                 }
