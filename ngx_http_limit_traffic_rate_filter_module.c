@@ -560,6 +560,7 @@ ngx_http_limit_traffic_rate_filter_create_loc_conf(ngx_conf_t *cf) {
         return NGX_CONF_ERROR;
     }
     conf->limit_traffic_rate = NGX_CONF_UNSET_SIZE;
+    conf->shm_zone= NGX_CONF_UNSET_PTR;
     return conf;
 }
 
@@ -569,6 +570,7 @@ ngx_http_limit_traffic_rate_filter_merge_loc_conf(ngx_conf_t *cf, void *parent, 
     ngx_http_limit_traffic_rate_filter_conf_t *conf = child;
 
     ngx_conf_merge_size_value(conf->limit_traffic_rate, prev->limit_traffic_rate, 0);
+    ngx_conf_merge_ptr_value(conf->shm_zone, prev->shm_zone, NULL);
 
     return NGX_CONF_OK;
 }
@@ -775,10 +777,6 @@ ngx_http_limit_traffic_rate(ngx_conf_t *cf, ngx_command_t *cmd, void *conf) {
 
     ngx_int_t   n;
     ngx_str_t  *value;
-
-    if (lircf->shm_zone) {
-        return "is duplicate";
-    }
 
     value = cf->args->elts;
 
