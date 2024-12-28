@@ -1,7 +1,7 @@
 ngx_addon_name=ngx_http_limit_traffic_rate_filter_module
 
 TRAFFIC_MODULE_SRCS="                                                         \
-                $ngx_addon_dir/src/ngx_http_limit_traffic_rate_filter_module.c    \
+                $ngx_addon_dir/ngx_http_limit_traffic_rate_filter_module.c    \
                 "
 
 TRAFFIC_MODULE_DEPS=""
